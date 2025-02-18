@@ -64,6 +64,7 @@ install:
 	npm install --no-save
 	npm run build
 ifeq ($(OS), Windows_NT)
+	make copy-windows-specific-magic-files
 	powershell -Command "if (!(Test-Path $(VIRTUAL_ENV_BIN)/python.exe)) { python -m venv $(VIRTUAL_ENV) }"
 else
 	if [ ! -f $(VIRTUAL_ENV_BIN)/python3 ]; then python3 -m venv $(VIRTUAL_ENV); fi
@@ -72,6 +73,16 @@ endif
 	$(VIRTUAL_ENV_BIN)/python -m pip install --upgrade -r requirements/dev.txt
 	$(VIRTUAL_ENV_BIN)/python manage.py migrate
 
+.PHONY: copy-windows-specific-magic-files
+copy-windows-specific-magic-files:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "if (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { \
+		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Verb RunAs; \
+		exit; \
+	} else { \
+		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"'; \
+	}"
+endif
 
 .PHONY: clean
 clean:
