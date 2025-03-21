@@ -162,46 +162,101 @@ coverage:
 
 .PHONY: lint
 lint:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$$EXIT_STATUS = 0; \
+		& $(VIRTUAL_ENV_BIN)\isort.exe --diff -c $(SOURCE_DIRS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\flake8.exe $(SOURCE_DIRS) --exclude migrations,settings; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		npm run lint; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\python.exe manage.py makemigrations --dry-run --check --noinput; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	$(VIRTUAL_ENV_BIN)/isort --diff -c $(SOURCE_DIRS) ||  EXIT_STATUS=$$?; \
 	$(VIRTUAL_ENV_BIN)/flake8 $(SOURCE_DIRS) --exclude migrations,settings ||  EXIT_STATUS=$$?; \
 	npm run lint ||  EXIT_STATUS=$$?; \
 	$(VIRTUAL_ENV_BIN)/python manage.py makemigrations --dry-run --check --noinput || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
+
 
 .PHONY: lint-quick
 lint-quick:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		npm run lint-staged; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\python.exe manage.py makemigrations --dry-run --check --noinput; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	npm run lint-staged ||  EXIT_STATUS=$$?; \
 	$(VIRTUAL_ENV_BIN)/python manage.py makemigrations --dry-run --check --noinput || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: lint-js-fix
 lint-js-fix:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		npm run lint-fix; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	npm run lint-fix ||  EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 # Use with caution, the automatic fixing might produce bad results
 .PHONY: lint-html-fix
 lint-html-fix:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		& $(VIRTUAL_ENV_BIN)\djlint.exe $(ARGUMENTS) --reformat --profile=django; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	$(VIRTUAL_ENV_BIN)/djlint $(ARGUMENTS) --reformat --profile=django || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: lint-html-files
 lint-html-files:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		& $(VIRTUAL_ENV_BIN)\djlint.exe $(ARGUMENTS) --profile=django --ignore=H006,H030,H031,H037,T002; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	$(VIRTUAL_ENV_BIN)/djlint $(ARGUMENTS) --profile=django --ignore=H006,H030,H031,H037,T002 || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: lint-python-files
 lint-python-files:
+ifeq ($(OS), Windows_NT)
+	powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		& $(VIRTUAL_ENV_BIN)\black.exe $(ARGUMENTS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\isort.exe $(ARGUMENTS) --filter-files; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\flake8.exe $(ARGUMENTS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	$(VIRTUAL_ENV_BIN)/black $(ARGUMENTS) || EXIT_STATUS=$$?; \
 	$(VIRTUAL_ENV_BIN)/isort $(ARGUMENTS) --filter-files || EXIT_STATUS=$$?; \
 	$(VIRTUAL_ENV_BIN)/flake8 $(ARGUMENTS) || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: po
 po:
