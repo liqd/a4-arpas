@@ -51,7 +51,7 @@ class ObjectSerializer(serializers.ModelSerializer):
 
 
 class SceneSerializer(serializers.ModelSerializer):
-    objects = ObjectSerializer(many=True)
+    objects = ObjectSerializer(source="object_set", many=True)
 
     class Meta:
         model = models.Scene
