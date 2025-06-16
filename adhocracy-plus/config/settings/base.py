@@ -119,6 +119,7 @@ INSTALLED_APPS = (
     "apps.polls",
     "apps.topicprio",
     "apps.debate",
+    "drf_spectacular",
 )
 
 MIDDLEWARE = (
@@ -318,6 +319,14 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Arpas API",
+    "DESCRIPTION": "API for Arpas  Plattform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 SIMPLE_JWT = {
@@ -456,6 +465,7 @@ A4_RATEABLES = (
     ("a4_candy_mapideas", "mapidea"),
     ("a4_candy_budgeting", "proposal"),
     ("a4_candy_topicprio", "topic"),
+    ("arpas_augmentedreality", "variant"),
 )
 
 A4_COMMENTABLES = (
@@ -468,6 +478,7 @@ A4_COMMENTABLES = (
     ("a4_candy_budgeting", "proposal"),
     ("a4_candy_topicprio", "topic"),
     ("a4_candy_debate", "subject"),
+    ("arpas_augmentedreality", "variant"),
 )
 
 A4_COMMENT_CATEGORIES = (
