@@ -27,7 +27,8 @@ from adhocracy4.polls.api import PollViewSet
 from adhocracy4.ratings.api import RatingViewSet
 from adhocracy4.reports.api import ReportViewSet
 from apps.account.api import AccountViewSet
-from apps.augmentedreality import urls as ar_urls
+from apps.augmentedreality.api import CombinedCommentViewSet
+from apps.augmentedreality.api import CombinedRatingViewSet
 from apps.contrib import views as contrib_views
 from apps.contrib.sitemaps import static_sitemap_index
 from apps.documents.api import DocumentViewSet
@@ -88,6 +89,11 @@ ct_router.register(
 )
 ct_router.register(r"comment-moderate", CommentModerateSet, basename="comment-moderate")
 
+ar_router = a4routers.ContentTypeDefaultRouter()
+ar_router.register(r"arpas-comments", CombinedCommentViewSet, basename="arpas-comments")
+ar_router.register(r"arpas-ratings", CombinedRatingViewSet, basename="arpas-ratings")
+
+
 comment_router = a4routers.CommentDefaultRouter()
 comment_router.register(
     r"moderatorfeedback", ModeratorCommentFeedbackViewSet, basename="moderatorfeedback"
@@ -113,7 +119,7 @@ urlpatterns = [
     path("api/", include(comment_router.urls)),
     path("api/", include(moderation_router.urls)),
     path("api/", include(router.urls)),
-    path("api/", include(ar_urls)),
+    path("api/", include(ar_router.urls)),
     re_path(r"^api/account/", AccountViewSet.as_view(), name="api-account"),
     # API JWT authentication
     re_path(r"^api/login", obtain_auth_token, name="api-login"),
