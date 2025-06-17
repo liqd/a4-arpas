@@ -5,6 +5,7 @@ git+https://github.com/liqd/adhocracy4.git@82fb1ef56b03d51b8bb9d1b2edddcb5f75a96
 brotli==1.1.0
 django-cloudflare-push==0.2.2
 django_csp==3.8
+django-guest-user @ git+https://github.com/liqd/django-guest-user.git
 djangorestframework-gis==1.1.0
 django-parler==2.3
 djangorestframework-simplejwt==5.3.1
