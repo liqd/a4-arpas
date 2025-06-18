@@ -19,7 +19,9 @@ class Scene(models.Model):
 
 class Object(models.Model):
     name = models.CharField(max_length=255)
-    scene = models.ForeignKey(Scene, on_delete=models.CASCADE, related_name="scenes")
+    scene = models.ForeignKey(
+        Scene, on_delete=models.CASCADE, related_name="object_set"
+    )
     coordinates = PointField(dim=3, default=Point(0, 0, 0), srid=0)
     qr_id = models.CharField(max_length=255)
 
@@ -44,3 +46,8 @@ class Variant(models.Model):
 
     def __str__(self):
         return f"Variant: {self.name}"
+
+    @property
+    def project(self):
+        """Get the project through the relationship: Variant -> Object -> Scene -> item -> project"""
+        return self.object.scene.item.project
