@@ -30,7 +30,11 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=255)),
                 (
                     "coordinates",
-                    django.contrib.gis.db.models.fields.PointField(srid=4326),
+                    django.contrib.gis.db.models.fields.PointField(
+                        default=django.contrib.gis.geos.point.Point(0, 0, 0),
+                        dim=3,
+                        srid=0,
+                    ),
                 ),
                 ("qr_id", models.CharField(max_length=255)),
             ],
