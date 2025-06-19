@@ -27,3 +27,24 @@ def react_augmentedreality_arc(topic):
         '<div data-arpas-widget="arc" ' 'data-attributes="{attributes}"></div>',
         attributes=json.dumps(attributes),
     )
+
+@register.simple_tag()
+def react_arc_viewer(topic):
+    attributes = {
+        "topic": TopicSerializer(topic).data,
+        "scene": None,
+    }
+
+    if topic.scene:
+        attributes["scene"] = SceneSerializer(topic.scene).data
+
+    if hasattr(settings, "MINIO_DATA"):
+        attributes["minioData"] = settings.MINIO_DATA
+
+    if attributes["scene"]:
+        return format_html(
+            '<div data-arpas-widget="viewer" ' 'data-attributes="{attributes}"></div>',
+            attributes=json.dumps(attributes),
+        )
+    else:
+        return format_html("<div></div>")

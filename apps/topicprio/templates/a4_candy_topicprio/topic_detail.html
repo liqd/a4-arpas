@@ -4,6 +4,7 @@
 {% block extra_js %}
     {{ block.super }}
     <script type="text/javascript" defer src="{% static 'arpas_arc.js' %}"></script>
+    <script type="text/javascript" defer src="{% static 'arpas_viewer.js' %}"></script>
 {% endblock extra_js %}
 
 {% block extra_css %}
@@ -69,6 +70,7 @@
                 </div>
 
                 {% react_augmentedreality_arc topic=object %}
+                {% react_arc_viewer topic=object %}
 
                 <div class="item-detail__actions lr-bar">
                     {% if object|has_feature:"rate" %}

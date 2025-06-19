@@ -12,6 +12,11 @@ module.exports = {
         'arpas-arc/style'
       ]
     },
+    arpas_viewer: {
+      import: [
+        './apps/augmentedreality/assets/react_3d_viewer.jsx',
+      ]
+    },
     adhocracy4: {
       import: [ // array of entry points
         '@fortawesome/fontawesome-free/scss/fontawesome.scss',
@@ -41,6 +46,12 @@ module.exports = {
       import: [
         './adhocracy-plus/assets/js/init-picker.js',
         './node_modules/flatpickr/dist/flatpickr.css'
+      ],
+      dependOn: 'adhocracy4'
+    },
+     online_3d_viewer: {
+      import: [
+        './node_modules/online-3d-viewer/build/o3dv.min.js',
       ],
       dependOn: 'adhocracy4'
     },
