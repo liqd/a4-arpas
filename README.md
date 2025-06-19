@@ -90,14 +90,28 @@ We take security seriously. If you find any security issues, please feel free to
 
 ### Use postgresql database for testing
 
+#### MacOS dependencies
+
+```
+brew install postgresql
+brew install postgis
+```
+
 run the following command once:
 ```
-make postgres-create
+make postgres-create 
 ```
+
+or
+
+```
+make postgres-create-macos
+```
+
 to start the test server with postgresql, run:
 ```
 export DATABASE=postgresql
-make postgres-start
+make postgres-start # (or make postgres-start-macos)
 make watch
 ```
 
