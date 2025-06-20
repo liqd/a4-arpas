@@ -26,7 +26,6 @@ from adhocracy4.ratings.api import RatingViewSet
 from adhocracy4.reports.api import ReportViewSet
 from apps.account.api import AccountViewSet
 from apps.augmentedreality import urls as ar_urls
-from apps.comments import urls as arcomments_urls
 from apps.contrib import views as contrib_views
 from apps.contrib.sitemaps import static_sitemap_index
 from apps.documents.api import DocumentViewSet
@@ -112,7 +111,6 @@ urlpatterns = [
     path("api/", include(comment_router.urls)),
     path("api/", include(moderation_router.urls)),
     path("api/", include(router.urls)),
-    path("api/", include(arcomments_urls)),
     path("api/", include(ar_urls)),
     re_path(r"^api/account/", AccountViewSet.as_view(), name="api-account"),
     # API JWT authentication
