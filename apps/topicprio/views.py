@@ -51,6 +51,22 @@ class TopicDetailView(idea_views.AbstractIdeaDetailView):
     )
     permission_required = "a4_candy_topicprio.view_topic"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["comments_object"] = self.get_comments_object()
+        return context
+
+    def get_comments_object(self):
+        # Get the first variant for this topic
+        if self.object and self.object.scene:
+            # Get the first object of the scene
+            first_object = self.object.scene.object_set.first()
+            if first_object:
+                # Get the first variant of the object (sorted by weight)
+                first_variant = first_object.variants.first()
+                return first_variant
+        return self.object
+
 
 class TopicCreateFilterSet(a4_filters.DefaultsFilterSet):
     defaults = {"ordering": "name"}
