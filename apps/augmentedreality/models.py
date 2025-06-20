@@ -14,6 +14,8 @@ class Scene(models.Model):
         unique_together = (("content_type", "object_id"),)
 
     def __str__(self):
+        if self.item.name:
+            return f"Scene {self.item.name}"
         return f"Scene in {self.item.project.name}"
 
 
