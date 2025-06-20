@@ -468,6 +468,7 @@ A4_COMMENTABLES = (
     ("a4_candy_budgeting", "proposal"),
     ("a4_candy_topicprio", "topic"),
     ("a4_candy_debate", "subject"),
+    ("arpas_augmentedreality", "variant"),
 )
 
 A4_COMMENT_CATEGORIES = (
