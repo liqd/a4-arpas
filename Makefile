@@ -236,6 +236,7 @@ postgres-create-macos:
 		PGDATA=pgsql PGPORT=5556 pg_ctl start; \
 		PGDATA=pgsql PGPORT=5556 createuser -s django; \
 		PGDATA=pgsql PGPORT=5556 createdb -O django django; \
+		psql -U django -d django -c "CREATE EXTENSION IF NOT EXISTS postgis;"; \
 	fi
 
 .PHONY: local-a4
