@@ -456,6 +456,7 @@ A4_RATEABLES = (
     ("a4_candy_mapideas", "mapidea"),
     ("a4_candy_budgeting", "proposal"),
     ("a4_candy_topicprio", "topic"),
+    ("arpas_augmentedreality", "variant"),
 )
 
 A4_COMMENTABLES = (

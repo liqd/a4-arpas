@@ -1,8 +1,13 @@
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db.models import PointField
 from django.contrib.gis.geos import Point
 from django.db import models
+
+from adhocracy4.comments import models as comment_models
+from adhocracy4.models import query
+from adhocracy4.ratings import models as rating_models
 
 
 class Scene(models.Model):
@@ -31,6 +36,10 @@ class Object(models.Model):
         return f"Object: {self.name}"
 
 
+class VariantQuerySet(query.RateableQuerySet):
+    pass
+
+
 class Variant(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
@@ -43,6 +52,15 @@ class Variant(models.Model):
         Object, on_delete=models.CASCADE, related_name="variants"
     )
 
+    ratings = GenericRelation(
+        rating_models.Rating, related_query_name="topic", object_id_field="object_pk"
+    )
+    comments = GenericRelation(
+        comment_models.Comment, related_query_name="topic", object_id_field="object_pk"
+    )
+
+    objects = VariantQuerySet.as_manager()
+
     class Meta:
         ordering = ["weight"]
 
@@ -53,3 +71,8 @@ class Variant(models.Model):
     def project(self):
         """Get the project through the relationship: Variant -> Object -> Scene -> item -> project"""
         return self.object.scene.item.project
+
+    @property
+    def module(self):
+        """Get the module through the relationship: Variant -> Object -> Scene -> item -> module"""
+        return self.object.scene.item.module
