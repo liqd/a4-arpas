@@ -1,0 +1,9 @@
+# A Template for generation a local.py file locally
+
+MINIO_DATA = {
+    "endpoint": "",
+    "region": "eu-central-1",
+    "accessKey": "",
+    "secretKey": "",
+    "secure": True
+}
