@@ -205,7 +205,7 @@ postgres-start-macos:
 		echo "If you're sure it's not running, try: make postgres-clean-lock"; \
 		exit 1; \
 	fi; \
-	PGDATA=pgsql PGPORT=5556 pg_ctl start
+	pg_ctl -D pgsql -o "-p 5556" start
 
 .PHONY: postgres-stop
 postgres-stop:
@@ -213,7 +213,7 @@ postgres-stop:
 
 .PHONY: postgres-stop-macos
 postgres-stop-macos:
-	PGDATA=pgsql PGPORT=5556 pg_ctl stop
+	pg_ctl -D pgsql -o "-p 5556" stop
 
 .PHONY: postgres-create
 postgres-create:
