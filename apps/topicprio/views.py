@@ -1,3 +1,4 @@
+import django
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -10,6 +11,7 @@ from adhocracy4.filters import widgets as filters_widgets
 from adhocracy4.filters.filters import FreeTextFilter
 from adhocracy4.projects.mixins import DisplayProjectOrModuleMixin
 from adhocracy4.projects.mixins import ProjectMixin
+from apps.augmentedreality.models import Variant
 from apps.contrib.widgets import AplusOrderingWidget
 from apps.ideas import views as idea_views
 
@@ -53,18 +55,32 @@ class TopicDetailView(idea_views.AbstractIdeaDetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["comments_object"] = self.get_comments_object()
+        context["variant_object"] = self.get_variant_object()
         return context
 
-    def get_comments_object(self):
-        # Get the first variant for this topic
+    # Get the first Variant of the topic to start with
+    def get_variant_object(self):
         if self.object and self.object.scene:
-            # Get the first object of the scene
             first_object = self.object.scene.object_set.first()
             if first_object:
-                # Get the first variant of the object (sorted by weight)
                 first_variant = first_object.variants.first()
-                return first_variant
+                print(first_variant)
+                print(first_variant.pk)
+                if first_variant:
+                    # Annotate the variant object with rating counts
+                    variant = (
+                        Variant.objects.filter(pk=first_variant.pk)
+                        .annotate_positive_rating_count()
+                        .annotate_negative_rating_count()
+                        .first()
+                    )
+                    print(variant)
+                    print(
+                        django.contrib.contenttypes.models.ContentType.objects.get_for_model(
+                            Variant
+                        ).id
+                    )
+                    return variant
         return self.object
 
 
