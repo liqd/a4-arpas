@@ -18,6 +18,8 @@ adhocracy+ is designed to make online participation easy and accessible to every
  * libpq (only if postgres should be used)
  * pillow-heif (required for macOS M1 Monterey and newer versions)
  * libpq (only if PostgreSQL is used)
+ * postgis (only if PostgreSQL is used)
+ * libmagic (macOS)
  * GDAL
  * SpatiaLite [with JSON1 enabled](https://code.djangoproject.com/wiki/JSON1Extension) (only if SpatiaLite is used for local development)
  * Redis (required in production, optional for development)
@@ -90,14 +92,28 @@ We take security seriously. If you find any security issues, please feel free to
 
 ### Use postgresql database for testing
 
+#### MacOS dependencies
+
+```
+brew install postgresql
+brew install postgis
+```
+
 run the following command once:
 ```
-make postgres-create
+make postgres-create 
 ```
+
+or
+
+```
+make postgres-create-macos
+```
+
 to start the test server with postgresql, run:
 ```
 export DATABASE=postgresql
-make postgres-start
+make postgres-start # (or make postgres-start-macos)
 make watch
 ```
 

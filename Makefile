@@ -198,9 +198,22 @@ release:
 postgres-start:
 	sudo -u postgres PGDATA=pgsql PGPORT=5556 /usr/lib/postgresql/12/bin/pg_ctl start
 
+.PHONY: postgres-start-macos
+postgres-start-macos:
+	@if [ -f "pgsql/postmaster.pid" ]; then \
+		echo "PostgreSQL is already running or improperly shut down."; \
+		echo "If you're sure it's not running, try: make postgres-clean-lock"; \
+		exit 1; \
+	fi; \
+	pg_ctl -D pgsql -o "-p 5556" start
+
 .PHONY: postgres-stop
 postgres-stop:
 	sudo -u postgres PGDATA=pgsql PGPORT=5556 /usr/lib/postgresql/12/bin/pg_ctl stop
+
+.PHONY: postgres-stop-macos
+postgres-stop-macos:
+	pg_ctl -D pgsql -o "-p 5556" stop
 
 .PHONY: postgres-create
 postgres-create:
@@ -212,6 +225,18 @@ postgres-create:
 		sudo -u postgres PGDATA=pgsql PGPORT=5556 /usr/lib/postgresql/12/bin/pg_ctl start; \
 		sudo -u postgres PGDATA=pgsql PGPORT=5556 /usr/lib/postgresql/12/bin/createuser -s django; \
 		sudo -u postgres PGDATA=pgsql PGPORT=5556 /usr/lib/postgresql/12/bin/createdb -O django django; \
+	fi
+
+.PHONY: postgres-create-macos
+postgres-create-macos:
+	if [ -d "pgsql" ]; then \
+		echo "postgresql has already been initialized"; \
+	else \
+		initdb pgsql; \
+		PGDATA=pgsql PGPORT=5556 pg_ctl start; \
+		PGDATA=pgsql PGPORT=5556 createuser -s django; \
+		PGDATA=pgsql PGPORT=5556 createdb -O django django; \
+		psql -U django -d django -c "CREATE EXTENSION IF NOT EXISTS postgis;"; \
 	fi
 
 .PHONY: local-a4
