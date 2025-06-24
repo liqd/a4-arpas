@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from guest_user.mixins import AllowGuestUserMixin
 
 from adhocracy4.comments.models import Comment
 from adhocracy4.comments_async.api import CommentViewSet
@@ -6,11 +7,10 @@ from adhocracy4.comments_async.api import CommentViewSet
 from .models import Scene
 from .models import Variant
 
-# from adhocracy4.comments_async.serializers import ThreadListSerializer
 # from adhocracy4.comments.serializers import ThreadSerializer
 
 
-class CombinedCommentViewSet(CommentViewSet):
+class CombinedCommentViewSet(AllowGuestUserMixin, CommentViewSet):
     def get_queryset(self):
         # First get the normal comments of the topic
         topic_comments = super().get_queryset()
