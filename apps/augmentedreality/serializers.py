@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from util.minio_client import minio_client
+
 from . import models
 
 
@@ -7,6 +9,7 @@ class VariantSerializer(serializers.ModelSerializer):
     offset_position = serializers.SerializerMethodField()
     offset_scale = serializers.SerializerMethodField()
     offset_rotation = serializers.SerializerMethodField()
+    mesh_url = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Variant
@@ -15,6 +18,7 @@ class VariantSerializer(serializers.ModelSerializer):
             "name",
             "description",
             "mesh_id",
+            "mesh_url",
             "offset_position",
             "offset_scale",
             "offset_rotation",
@@ -29,6 +33,9 @@ class VariantSerializer(serializers.ModelSerializer):
 
     def get_offset_rotation(self, obj):
         return list(obj.offset_rotation.tuple)
+
+    def get_mesh_url(self, obj):
+        return minio_client.get_presigned_url(obj.mesh_id)
 
 
 class ObjectSerializer(serializers.ModelSerializer):
