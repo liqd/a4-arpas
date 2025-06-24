@@ -11,7 +11,9 @@ from adhocracy4.ratings import models as rating_models
 
 
 class Scene(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(
+        ContentType, on_delete=models.CASCADE, related_name="scenes"
+    )
     object_id = models.PositiveIntegerField()
     item = GenericForeignKey("content_type", "object_id")
 
