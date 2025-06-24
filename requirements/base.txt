@@ -15,6 +15,7 @@ xmltodict==0.14.2
 zeep==4.3.1
 urllib3==2.3.0
 redis==5.2.1
+minio==7.2.15
 
 # Inherited a4-core requirements
 Django==4.2.18
