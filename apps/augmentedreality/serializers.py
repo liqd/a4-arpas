@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from util.minio_client import get_presigned_url
+from util.minio_client import minio_client
 
 from . import models
 
@@ -35,7 +35,7 @@ class VariantSerializer(serializers.ModelSerializer):
         return list(obj.offset_rotation.tuple)
 
     def get_mesh_url(self, obj):
-        return get_presigned_url(obj.mesh_id)
+        return minio_client.get_presigned_url(obj.mesh_id)
 
 
 class ObjectSerializer(serializers.ModelSerializer):
