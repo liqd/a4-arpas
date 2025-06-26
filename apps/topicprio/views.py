@@ -47,9 +47,31 @@ class TopicListView(idea_views.AbstractIdeaListView, DisplayProjectOrModuleMixin
 class TopicDetailView(idea_views.AbstractIdeaDetailView):
     model = models.Topic
     queryset = (
-        models.Topic.objects.annotate_positive_rating_count().annotate_negative_rating_count()
+        models.Topic.objects.annotate_positive_rating_count()
+        .annotate_negative_rating_count()
+        .prefetch_related("_scene__object_set__variants")
     )
     permission_required = "a4_candy_topicprio.view_topic"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["variant_object"] = self.get_variant_object()
+        return context
+
+    # Get the first Variant of the topic to start with
+    def get_variant_object(self):
+        if self.object and self.object.scene:
+            first_ar_object = self.object.scene.object_set.first()
+            if first_ar_object:
+                first_variant = (
+                    first_ar_object.variants.order_by("pk")
+                    .annotate_positive_rating_count()
+                    .annotate_negative_rating_count()
+                    .first()
+                )
+                if first_variant:
+                    return first_variant
+        return self.object
 
 
 class TopicCreateFilterSet(a4_filters.DefaultsFilterSet):

@@ -73,11 +73,11 @@
                 <div class="item-detail__actions lr-bar">
                     {% if object|has_feature:"rate" %}
                         <div class="lr-bar__left">
-                            {% react_ratings object %}
+                            {% react_ratings variant_object %}
                         </div>
                     {% endif %}
                 </div>
-                {% react_comments_async obj=object no_control_bar=True %}
+                {% react_comments_async obj=variant_object no_control_bar=True %}
             </div>
         </div>
     </div>
