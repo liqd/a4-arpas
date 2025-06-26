@@ -5,9 +5,9 @@ from django.contrib.gis.db.models import PointField
 from django.contrib.gis.geos import Point
 from django.db import models
 
-from adhocracy4.comments import models as comment_models
+from adhocracy4.comments.models import Comment
 from adhocracy4.models import query
-from adhocracy4.ratings import models as rating_models
+from adhocracy4.ratings.models import Rating
 
 
 class Scene(models.Model):
@@ -53,10 +53,10 @@ class Variant(models.Model):
     )
 
     ratings = GenericRelation(
-        rating_models.Rating, related_query_name="topic", object_id_field="object_pk"
+        Rating, related_query_name="topic", object_id_field="object_pk"
     )
     comments = GenericRelation(
-        comment_models.Comment, related_query_name="topic", object_id_field="object_pk"
+        Comment, related_query_name="topic", object_id_field="object_pk"
     )
 
     objects = VariantQuerySet.as_manager()

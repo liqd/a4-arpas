@@ -1,4 +1,3 @@
-import django
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
@@ -11,7 +10,6 @@ from adhocracy4.filters import widgets as filters_widgets
 from adhocracy4.filters.filters import FreeTextFilter
 from adhocracy4.projects.mixins import DisplayProjectOrModuleMixin
 from adhocracy4.projects.mixins import ProjectMixin
-from apps.augmentedreality.models import Variant
 from apps.contrib.widgets import AplusOrderingWidget
 from apps.ideas import views as idea_views
 
@@ -49,7 +47,9 @@ class TopicListView(idea_views.AbstractIdeaListView, DisplayProjectOrModuleMixin
 class TopicDetailView(idea_views.AbstractIdeaDetailView):
     model = models.Topic
     queryset = (
-        models.Topic.objects.annotate_positive_rating_count().annotate_negative_rating_count()
+        models.Topic.objects.annotate_positive_rating_count()
+        .annotate_negative_rating_count()
+        .prefetch_related("_scene__object_set__variants")
     )
     permission_required = "a4_candy_topicprio.view_topic"
 
@@ -61,26 +61,16 @@ class TopicDetailView(idea_views.AbstractIdeaDetailView):
     # Get the first Variant of the topic to start with
     def get_variant_object(self):
         if self.object and self.object.scene:
-            first_object = self.object.scene.object_set.first()
-            if first_object:
-                first_variant = first_object.variants.first()
-                print(first_variant)
-                print(first_variant.pk)
+            first_ar_object = self.object.scene.object_set.first()
+            if first_ar_object:
+                first_variant = (
+                    first_ar_object.variants.order_by("pk")
+                    .annotate_positive_rating_count()
+                    .annotate_negative_rating_count()
+                    .first()
+                )
                 if first_variant:
-                    # Annotate the variant object with rating counts
-                    variant = (
-                        Variant.objects.filter(pk=first_variant.pk)
-                        .annotate_positive_rating_count()
-                        .annotate_negative_rating_count()
-                        .first()
-                    )
-                    print(variant)
-                    print(
-                        django.contrib.contenttypes.models.ContentType.objects.get_for_model(
-                            Variant
-                        ).id
-                    )
-                    return variant
+                    return first_variant
         return self.object
 
 
