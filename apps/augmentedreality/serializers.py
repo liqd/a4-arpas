@@ -38,12 +38,12 @@ class VariantSerializer(serializers.ModelSerializer):
         return minio_client.get_presigned_url(obj.mesh_id)
 
 
-class ObjectSerializer(serializers.ModelSerializer):
+class ARObjectSerializer(serializers.ModelSerializer):
     variants = VariantSerializer(many=True)
     coordinates = serializers.SerializerMethodField()
 
     class Meta:
-        model = models.Object
+        model = models.ARObject
         fields = ("id", "name", "coordinates", "qr_id", "variants")
 
     def get_coordinates(self, obj):
@@ -51,7 +51,7 @@ class ObjectSerializer(serializers.ModelSerializer):
 
 
 class SceneSerializer(serializers.ModelSerializer):
-    objects = ObjectSerializer(source="object_set", many=True)
+    objects = ARObjectSerializer(source="arobjects", many=True)
 
     class Meta:
         model = models.Scene

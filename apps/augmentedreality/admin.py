@@ -8,11 +8,11 @@ class SceneAdmin(admin.ModelAdmin):
     list_display = ["item"]
 
 
-@admin.register(models.Object)
-class ObjectAdmin(admin.ModelAdmin):
+@admin.register(models.ARObject)
+class ARObjectAdmin(admin.ModelAdmin):
     list_display = ["name", "scene"]
 
 
 @admin.register(models.Variant)
 class VariantAdmin(admin.ModelAdmin):
-    list_display = ["name", "object"]
+    list_display = ["name", "ar_object"]

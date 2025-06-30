@@ -1,7 +1,7 @@
 import factory
 from django.contrib.contenttypes.models import ContentType
 
-from apps.augmentedreality.models import Object
+from apps.augmentedreality.models import ARObject
 from apps.augmentedreality.models import Scene
 from apps.augmentedreality.models import Variant
 from apps.topicprio.models import Topic
@@ -22,11 +22,11 @@ class SceneFactory(factory.django.DjangoModelFactory):
         return topic.pk
 
 
-class ObjectFactory(factory.django.DjangoModelFactory):
+class ARObjectFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = Object
+        model = ARObject
 
-    name = factory.Sequence(lambda n: f"Objekt{n}")
+    name = factory.Sequence(lambda n: f"ARObjekt{n}")
     scene = factory.SubFactory(SceneFactory)
     coordinates = "POINT(0 0 0)"
     qr_id = factory.Sequence(lambda n: f"qr{n}")
@@ -38,7 +38,7 @@ class VariantFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda n: f"Variante{n}")
     mesh_id = factory.Sequence(lambda n: f"mesh{n}")
-    object = factory.SubFactory(ObjectFactory)
+    ar_object = factory.SubFactory(ARObjectFactory)
     offset_position = "POINT(0 0 0)"
     offset_rotation = "POINT(0 0 0)"
     offset_scale = "POINT(0 0 0)"

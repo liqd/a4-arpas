@@ -49,7 +49,7 @@ class TopicDetailView(idea_views.AbstractIdeaDetailView):
     queryset = (
         models.Topic.objects.annotate_positive_rating_count()
         .annotate_negative_rating_count()
-        .prefetch_related("_scene__object_set__variants")
+        .prefetch_related("_scene__arobjects__variants")
     )
     permission_required = "a4_candy_topicprio.view_topic"
 
@@ -61,7 +61,7 @@ class TopicDetailView(idea_views.AbstractIdeaDetailView):
     # Get the first Variant of the topic to start with
     def get_variant_object(self):
         if self.object and self.object.scene:
-            first_ar_object = self.object.scene.object_set.first()
+            first_ar_object = self.object.scene.arobjects.first()
             if first_ar_object:
                 first_variant = (
                     first_ar_object.variants.order_by("pk")
