@@ -1,3 +1,5 @@
+include Makefile_postgres.part
+
 VIRTUAL_ENV ?= venv
 NODE_BIN = node_modules/.bin
 SOURCE_DIRS = adhocracy-plus apps tests
