@@ -112,6 +112,7 @@ urlpatterns = [
     path("api/", include(comment_router.urls)),
     path("api/", include(moderation_router.urls)),
     path("api/", include(router.urls)),
+    path("api/", include("apps.augmentedreality.urls")),  # Where your ct_router lives
     re_path(r"^api/account/", AccountViewSet.as_view(), name="api-account"),
     # API JWT authentication
     re_path(r"^api/login", obtain_auth_token, name="api-login"),
