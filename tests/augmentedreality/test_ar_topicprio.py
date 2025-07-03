@@ -43,6 +43,19 @@ def test_ar_variant_comment_create_with_guest(apiclient):
 
         url = f"/api/contenttypes/{variant_content_type.id}/objects/{variant.id}/arpas-comments/"
         print(url)
+
+        response = apiclient.get(url)  # Try GET first to inspect
+        print("GET response:", response.status_code, response.data)
+
+        from django.urls import resolve
+
+        try:
+            match = resolve(url)
+            print(f"Resolved view: {match.func.__name__}")
+            print(f"View class: {match.func.cls}")
+        except Exception as e:
+            print(f"URL resolution failed: {str(e)}")
+
         response = apiclient.post(
             url, {"comment": "Test comment", "agreed_terms_of_use": True}, format="json"
         )
