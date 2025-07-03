@@ -47,14 +47,34 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         response = apiclient.get(url)  # Try GET first to inspect
         print("GET response:", response.status_code, response.data)
 
+        import sys
+
         from django.urls import resolve
 
         try:
             match = resolve(url)
-            print(f"Resolved view: {match.func.__name__}")
-            print(f"View class: {match.func.cls}")
+            print(f"Resolved view: {match.func.__name__}", file=sys.stderr)
+            print(f"View class: {match.func.cls}", file=sys.stderr)
         except Exception as e:
-            print(f"URL resolution failed: {str(e)}")
+            print(
+                f"URL resolution failed: {type(e).__name__}: {str(e)}", file=sys.stderr
+            )
+            raise  # Re-raise to see full traceback
+
+        from django.urls import get_resolver
+
+        resolver = get_resolver()
+        print("\n=== REGISTERED URL PATTERNS ===", file=sys.stderr)
+        for pattern in resolver.url_patterns:
+            print(pattern.pattern, file=sys.stderr)
+
+        from django.conf import settings
+
+        print("\n=== INSTALLED APPS ===", file=sys.stderr)
+        print(settings.INSTALLED_APPS, file=sys.stderr)
+
+        print("\n=== ROOT_URLCONF ===", file=sys.stderr)
+        print(settings.ROOT_URLCONF, file=sys.stderr)
 
         response = apiclient.post(
             url, {"comment": "Test comment", "agreed_terms_of_use": True}, format="json"

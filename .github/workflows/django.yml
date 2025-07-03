@@ -72,6 +72,29 @@ jobs:
           npm run build
           pip install -r requirements/dev.txt
           pip install coveralls
+      - name: Debug URL resolution
+        run: |
+          python manage.py shell -c "
+          from django.urls import resolve;
+          from django.contrib.contenttypes.models import ContentType;
+          
+          # Print all URL patterns
+          from urls import urlpatterns
+          print('=== ALL URL PATTERNS ===')
+          for pattern in urlpatterns:
+              print(pattern.pattern)
+          
+          # Test specific URL resolution
+          print('\n=== TEST RESOLUTION ===')
+          try:
+              content_type_id = ContentType.objects.get_for_model('augmentedreality.Variant').id;
+              test_url = f'/api/contenttypes/{content_type_id}/objects/1/arpas-comments/';
+              match = resolve(test_url);
+              print(f'Resolved: {match.func.__name__}');
+              print(f'View class: {match.func.cls.__name__}');
+          except Exception as e:
+              print(f'Failed: {type(e).__name__}: {str(e)}')
+          "
       - name: Run Tests
         env:
           PGPASSWORD: postgres
