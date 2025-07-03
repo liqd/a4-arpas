@@ -90,7 +90,7 @@ jobs:
               print('\nROOT_URLCONF:', settings.ROOT_URLCONF, file=sys.stderr)
               
               # 3. Try importing your actual URLs module
-              from your_project import urls  # Replace 'your_project' with your actual project name
+              from adhocracy-plus.config.settings import urls  # Replace 'your_project' with your actual project name
               print('\nSuccessfully imported URLs module', file=sys.stderr)
               
               # 4. Print all URL patterns

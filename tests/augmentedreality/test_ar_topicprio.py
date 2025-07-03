@@ -87,3 +87,52 @@ def test_ar_variant_comment_create_with_guest(apiclient):
     finally:
         # Reset permissions
         CombinedCommentViewSet.permission_classes = original_permissions
+
+
+# @pytest.mark.django_db
+# def test_ar_variant_comment_create_with_guest_mock():
+#     from rest_framework.test import APIRequestFactory
+#     factory = APIRequestFactory()
+#     request = factory.post(
+#         "/fake-url",
+#         {"comment": "Test comment", "agreed_terms_of_use": True},
+#         format="json"
+#     )
+
+#     # DRF's APIRequestFactory handles sessions
+#     response = CombinedCommentViewSet.as_view({'post': 'create'})(request)
+#     assert response.status_code == 201
+
+
+@pytest.mark.django_db
+def test_ar_variant_comment_create_with_guest_mock():
+    from django.contrib.auth.middleware import AuthenticationMiddleware
+
+    # from rest_framework.test import force_authenticate
+    from django.contrib.auth.models import AnonymousUser
+    from django.contrib.sessions.middleware import SessionMiddleware
+    from django.test import RequestFactory
+
+    factory = RequestFactory()
+    request = factory.post(
+        "/fake-url",
+        {"comment": "Test comment", "agreed_terms_of_use": True},
+        content_type="application/json",
+    )
+
+    # 1. Add session support
+    SessionMiddleware(lambda req: None).process_request(request)
+    request.session.save()
+
+    # 2. Add authentication support
+    AuthenticationMiddleware(lambda req: None).process_request(request)
+
+    # 3. Explicitly set anonymous user
+    request.user = AnonymousUser()  # from django.contrib.auth.models
+
+    # # 4. Mock guest user functionality if needed
+    # with patch('guest_user.mixins.maybe_create_guest_user') as mock_guest:
+    #     mock_guest.return_value = None  # Prevent actual guest user creation
+
+    response = CombinedCommentViewSet.as_view({"post": "create"})(request)
+    assert response.status_code == 201
