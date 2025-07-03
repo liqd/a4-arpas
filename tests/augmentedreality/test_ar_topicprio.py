@@ -44,7 +44,16 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         # url = f"/api/contenttypes/{variant_content_type.id}/objects/{variant.id}/"
         # print(url)
 
+        # from django.conf import settings
+        # Debug: Print all available URL names
+        from django.urls import get_resolver
         from django.urls import reverse
+
+        resolver = get_resolver()
+        url_patterns = resolver.url_patterns
+        print("Available URL patterns:")
+        for pattern in url_patterns:
+            print(f"  {pattern}")
 
         # url = reverse('arpas-comments-list', kwargs={
         #     'content_type_id': variant_content_type.id,
