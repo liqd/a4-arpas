@@ -10,7 +10,7 @@ from tests.topicprio.factories import TopicFactory
 
 
 @pytest.mark.django_db
-def test_comment_creation_with_valid_content_type(apiclient, admin):
+def test_ar_variant_comment_create_with_guest(apiclient):
     from rest_framework.permissions import AllowAny
 
     """
