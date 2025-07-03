@@ -24,11 +24,17 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         # Create topic, scene, ARObject needed for variant, which comment is bound to
         topic = TopicFactory()
         print(f"Created Topic: id={topic.id}, slug={topic.slug}")  # Debug
+        ContentType.objects.clear_cache()  # Add this before getting ContentType
         content_type = ContentType.objects.get_for_model(Topic)
         scene = Scene.objects.create(content_type=content_type, object_id=topic.id)
         ar_object = ARObject.objects.create(scene=scene)
         variant = Variant.objects.create(ar_object=ar_object, name="Test Variant")
         variant_content_type = ContentType.objects.get_for_model(Variant)
+
+        print("\n=== Database State ===")
+        print("Topics:", Topic.objects.values_list("id", flat=True))
+        print("Scenes:", Scene.objects.values_list("id", "object_id"))
+        print("Variants:", Variant.objects.values_list("id", "ar_object_id"))
 
         print(
             f"Actual ContentType ID for Variant: {ContentType.objects.get_for_model(Variant).id}"
