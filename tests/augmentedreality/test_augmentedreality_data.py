@@ -18,16 +18,16 @@ from tests.topicprio.factories import TopicFactory
 def test_react_augmentedreality_arc_variant_content_type_id():
     topic = TopicFactory()
 
-    # Template-Tag direkt aufrufen
+    # Call template-tag directly
     rendered_html = react_augmentedreality_arc(topic)
 
-    # Das data-attributes-Attribut extrahieren
+    # Extract the data-attributes attribute
     import re
 
     match = re.search(r'data-attributes="([^"]+)"', rendered_html)
-    assert match, "data-attributes-Attribut nicht gefunden"
+    assert match, "data-attributes attribute not found"
     data_attributes = match.group(1)
-    # HTML-Escaping rückgängig machen
+    # Reverse HTML-escaping
     data_attributes = data_attributes.replace("&quot;", '"')
     attributes = json.loads(data_attributes)
 
@@ -37,17 +37,17 @@ def test_react_augmentedreality_arc_variant_content_type_id():
 
 @pytest.mark.django_db
 def test_variant_comments_and_ratings():
-    # Nutzer und Basisobjekte anlegen
+    # Create user and base objects
     variant = VariantFactory()
     user = UserFactory()
-    # Kommentar anlegen
+    # Create comment
     comment = Comment.objects.create(
-        content_object=variant, comment="Testkommentar", creator=user
+        content_object=variant, comment="Test comment", creator=user
     )
-    # Bewertung anlegen
+    # Create rating
     rating = Rating.objects.create(content_object=variant, value=1, creator=user)
 
-    # Über die GenericRelation zugreifen
+    # Access via GenericRelation
     comments = list(variant.comments.all())
     ratings = list(variant.ratings.all())
 
@@ -55,6 +55,6 @@ def test_variant_comments_and_ratings():
     assert comments[0] == comment
     assert len(ratings) == 1
     assert ratings[0] == rating
-    # Rückwärtsprüfung
+    # Reverse check
     assert comment.content_object == variant
     assert rating.content_object == variant
