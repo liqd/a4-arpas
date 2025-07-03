@@ -9,7 +9,7 @@ from apps.topicprio.models import Topic
 from tests.topicprio.factories import TopicFactory
 
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 def test_ar_variant_comment_create_with_guest(apiclient):
     from rest_framework.permissions import AllowAny
 
@@ -23,6 +23,7 @@ def test_ar_variant_comment_create_with_guest(apiclient):
     try:
         # Create topic, scene, ARObject needed for variant, which comment is bound to
         topic = TopicFactory()
+        print(f"Created Topic: id={topic.id}, slug={topic.slug}")  # Debug
         content_type = ContentType.objects.get_for_model(Topic)
         scene = Scene.objects.create(content_type=content_type, object_id=topic.id)
         ar_object = ARObject.objects.create(scene=scene)
