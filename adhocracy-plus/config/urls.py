@@ -203,6 +203,7 @@ urlpatterns = [
         TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
         name="robots_file",
     ),
+    path("api/", include(ar_urls)),
 ]
 
 
@@ -233,5 +234,4 @@ if settings.DEBUG:
 urlpatterns += [
     path("", include("apps.organisations.urls")),
     path("", include("wagtail.urls")),
-    path("api/", include(ar_urls)),
 ]
