@@ -41,40 +41,54 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         )
         print(f"Variant ID being used: {variant.id}")
 
-        url = f"/api/contenttypes/{variant_content_type.id}/objects/{variant.id}/arpas-comments/"
-        print(url)
+        # url = f"/api/contenttypes/{variant_content_type.id}/objects/{variant.id}/"
+        # print(url)
 
-        response = apiclient.get(url)  # Try GET first to inspect
-        print("GET response:", response.status_code, response.data)
+        from django.urls import reverse
 
-        import sys
+        # url = reverse('arpas-comments-list', kwargs={
+        #     'content_type_id': variant_content_type.id,
+        #     'object_id': variant.id
+        # })
+        url = reverse(
+            "arpas-comments-list",
+            kwargs={
+                "content_type": variant_content_type.id,  # changed from content_type_id
+                "object_pk": variant.id,  # changed from object_id
+            },
+        )
 
-        from django.urls import resolve
+        # response = apiclient.get(url)  # Try GET first to inspect
+        # print("GET response:", response.status_code, response.data)
 
-        try:
-            match = resolve(url)
-            print(f"Resolved view: {match.func.__name__}", file=sys.stderr)
-            print(f"View class: {match.func.cls}", file=sys.stderr)
-        except Exception as e:
-            print(
-                f"URL resolution failed: {type(e).__name__}: {str(e)}", file=sys.stderr
-            )
-            raise  # Re-raise to see full traceback
+        # import sys
 
-        from django.urls import get_resolver
+        # from django.urls import resolve
 
-        resolver = get_resolver()
-        print("\n=== REGISTERED URL PATTERNS ===", file=sys.stderr)
-        for pattern in resolver.url_patterns:
-            print(pattern.pattern, file=sys.stderr)
+        # try:
+        #     match = resolve(url)
+        #     print(f"Resolved view: {match.func.__name__}", file=sys.stderr)
+        #     print(f"View class: {match.func.cls}", file=sys.stderr)
+        # except Exception as e:
+        #     print(
+        #         f"URL resolution failed: {type(e).__name__}: {str(e)}", file=sys.stderr
+        #     )
+        #     raise  # Re-raise to see full traceback
 
-        from django.conf import settings
+        # from django.urls import get_resolver
 
-        print("\n=== INSTALLED APPS ===", file=sys.stderr)
-        print(settings.INSTALLED_APPS, file=sys.stderr)
+        # resolver = get_resolver()
+        # print("\n=== REGISTERED URL PATTERNS ===", file=sys.stderr)
+        # for pattern in resolver.url_patterns:
+        #     print(pattern.pattern, file=sys.stderr)
 
-        print("\n=== ROOT_URLCONF ===", file=sys.stderr)
-        print(settings.ROOT_URLCONF, file=sys.stderr)
+        # from django.conf import settings
+
+        # print("\n=== INSTALLED APPS ===", file=sys.stderr)
+        # print(settings.INSTALLED_APPS, file=sys.stderr)
+
+        # print("\n=== ROOT_URLCONF ===", file=sys.stderr)
+        # print(settings.ROOT_URLCONF, file=sys.stderr)
 
         response = apiclient.post(
             url, {"comment": "Test comment", "agreed_terms_of_use": True}, format="json"
