@@ -9,10 +9,9 @@ from apps.topicprio.models import Topic
 from tests.topicprio.factories import TopicFactory
 
 
-@pytest.mark.django_db(transaction=True)
+@pytest.mark.django_db()
 def test_ar_variant_comment_create_with_guest(apiclient):
     import django
-    from django.conf import settings
     from django.apps import apps
 
     if not apps.ready:
@@ -20,8 +19,8 @@ def test_ar_variant_comment_create_with_guest(apiclient):
 
     # Force reload URLs
     from django.urls import clear_url_caches
-    clear_url_caches()
 
+    clear_url_caches()
 
     from rest_framework.permissions import AllowAny
 
@@ -67,19 +66,21 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         for pattern in url_patterns:
             print(f"  {pattern}")
 
-
         try:
             from apps.augmentedreality import urls as ar_urls
+
             print(f"AR URLs imported successfully: {ar_urls}")
             print(f"AR URL patterns: {ar_urls.urlpatterns}")
-            
+
             # Check if the ContentType router has any registered patterns
             from apps.augmentedreality.urls import ct_router
+
             print(f"AR ct_router: {ct_router}")
             print(f"AR ct_router.urls: {ct_router.urls}")
         except Exception as e:
             print(f"Error importing AR URLs: {e}")
             import traceback
+
             traceback.print_exc()
 
         # url = reverse('arpas-comments-list', kwargs={
@@ -87,7 +88,7 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         #     'object_id': variant.id
         # })
         url = reverse(
-            "arpas-comments-list",
+            "arpas-comments",
             kwargs={
                 "content_type": variant_content_type.id,  # changed from content_type_id
                 "object_pk": variant.id,  # changed from object_id
