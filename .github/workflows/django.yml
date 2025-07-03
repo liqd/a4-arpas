@@ -72,43 +72,6 @@ jobs:
           npm run build
           pip install -r requirements/dev.txt
           pip install coveralls
-      - name: Debug URL resolution
-        run: |
-          python manage.py shell -c "
-          import sys
-          from django.urls import resolve, get_resolver
-          from django.contrib.contenttypes.models import ContentType
-          
-          print('\n=== DEBUGGING URL RESOLUTION ===', file=sys.stderr)
-          
-          try:
-              # 1. Show all installed apps
-              from django.conf import settings
-              print('\nINSTALLED APPS:', settings.INSTALLED_APPS, file=sys.stderr)
-              
-              # 2. Show root URLconf
-              print('\nROOT_URLCONF:', settings.ROOT_URLCONF, file=sys.stderr)
-              
-              # 3. Try importing your actual URLs module
-              from adhocracy-plus.config.settings import urls  # Replace 'your_project' with your actual project name
-              print('\nSuccessfully imported URLs module', file=sys.stderr)
-              
-              # 4. Print all URL patterns
-              print('\nALL URL PATTERNS:', file=sys.stderr)
-              for pattern in get_resolver().url_patterns:
-                  print(pattern.pattern, file=sys.stderr)
-              
-              # 5. Test specific resolution
-              ct_id = ContentType.objects.get_for_model('augmentedreality.Variant').id
-              test_url = f'/api/contenttypes/{ct_id}/objects/1/arpas-comments/'
-              print(f'\nTESTING URL: {test_url}', file=sys.stderr)
-              
-              match = resolve(test_url)
-              print(f'\nSUCCESS! View: {match.func.__name__}', file=sys.stderr)
-          except Exception as e:
-              print(f'\nFAILED: {type(e).__name__}: {str(e)}', file=sys.stderr)
-              raise
-          "
       - name: Run Tests
         env:
           PGPASSWORD: postgres
