@@ -75,25 +75,39 @@ jobs:
       - name: Debug URL resolution
         run: |
           python manage.py shell -c "
-          from django.urls import resolve;
-          from django.contrib.contenttypes.models import ContentType;
+          import sys
+          from django.urls import resolve, get_resolver
+          from django.contrib.contenttypes.models import ContentType
           
-          # Print all URL patterns
-          from urls import urlpatterns
-          print('=== ALL URL PATTERNS ===')
-          for pattern in urlpatterns:
-              print(pattern.pattern)
+          print('\n=== DEBUGGING URL RESOLUTION ===', file=sys.stderr)
           
-          # Test specific URL resolution
-          print('\n=== TEST RESOLUTION ===')
           try:
-              content_type_id = ContentType.objects.get_for_model('augmentedreality.Variant').id;
-              test_url = f'/api/contenttypes/{content_type_id}/objects/1/arpas-comments/';
-              match = resolve(test_url);
-              print(f'Resolved: {match.func.__name__}');
-              print(f'View class: {match.func.cls.__name__}');
+              # 1. Show all installed apps
+              from django.conf import settings
+              print('\nINSTALLED APPS:', settings.INSTALLED_APPS, file=sys.stderr)
+              
+              # 2. Show root URLconf
+              print('\nROOT_URLCONF:', settings.ROOT_URLCONF, file=sys.stderr)
+              
+              # 3. Try importing your actual URLs module
+              from your_project import urls  # Replace 'your_project' with your actual project name
+              print('\nSuccessfully imported URLs module', file=sys.stderr)
+              
+              # 4. Print all URL patterns
+              print('\nALL URL PATTERNS:', file=sys.stderr)
+              for pattern in get_resolver().url_patterns:
+                  print(pattern.pattern, file=sys.stderr)
+              
+              # 5. Test specific resolution
+              ct_id = ContentType.objects.get_for_model('augmentedreality.Variant').id
+              test_url = f'/api/contenttypes/{ct_id}/objects/1/arpas-comments/'
+              print(f'\nTESTING URL: {test_url}', file=sys.stderr)
+              
+              match = resolve(test_url)
+              print(f'\nSUCCESS! View: {match.func.__name__}', file=sys.stderr)
           except Exception as e:
-              print(f'Failed: {type(e).__name__}: {str(e)}')
+              print(f'\nFAILED: {type(e).__name__}: {str(e)}', file=sys.stderr)
+              raise
           "
       - name: Run Tests
         env:
