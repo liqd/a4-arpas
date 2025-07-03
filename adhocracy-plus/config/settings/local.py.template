@@ -1,0 +1,27 @@
+# macOs paths
+SPATIALITE_LIBRARY_PATH = "/opt/homebrew/lib/mod_spatialite.dylib"
+GDAL_LIBRARY_PATH = "/opt/homebrew/Cellar/gdal/3.11.0_1/bin/gdal"
+GEOS_LIBRARY_PATH = "/opt/homebrew/Cellar/geos/3.13.1/lib/libgeos_c.dylib"
+
+
+# minio
+MINIO_DATA = {
+    "endpoint": "",
+    "region": "eu-central-1",
+    "bucket": "",
+    "accessKey": "",
+    "secretKey": ""
+}
+
+# postgres db config
+DATABASES = {
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": "",
+        "USER": "",
+        "PASSWORD": "",
+        "HOST": "",
+        "PORT": "5432",
+        "OPTIONS": {},
+    }
+}
