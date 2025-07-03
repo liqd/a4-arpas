@@ -113,7 +113,6 @@ urlpatterns = [
     path("api/", include(comment_router.urls)),
     path("api/", include(moderation_router.urls)),
     path("api/", include(router.urls)),
-    path("api/", include(ar_urls)),
     re_path(r"^api/account/", AccountViewSet.as_view(), name="api-account"),
     # API JWT authentication
     re_path(r"^api/login", obtain_auth_token, name="api-login"),
@@ -234,4 +233,5 @@ if settings.DEBUG:
 urlpatterns += [
     path("", include("apps.organisations.urls")),
     path("", include("wagtail.urls")),
+    path("api/", include(ar_urls)),
 ]

@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     "adhocracy4.rules",
     # General components that define models or helpers
     "apps.actions",
+    "apps.augmentedreality",
     "apps.captcha",
     "apps.contrib",
     "apps.interactiveevents",
@@ -119,7 +120,6 @@ INSTALLED_APPS = (
     "apps.mapideas",
     "apps.polls",
     "apps.topicprio",
-    "apps.augmentedreality",
     "apps.debate",
     "drf_spectacular",
 )
