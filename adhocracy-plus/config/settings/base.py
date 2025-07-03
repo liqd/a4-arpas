@@ -728,8 +728,7 @@ GUEST_USER = {
 }
 
 
-GUEST_USER_REQUIRED_ANON_URL = "/accounts/guests/login";
+GUEST_USER_REQUIRED_ANON_URL = "/accounts/guests/login"
 # Redirects below when guest user is required but currently regular user.
 # Currently only guest dashboard views use this, so redirects to user profile.
-GUEST_USER_REQUIRED_USER_URL = "/account/profile/";
-# GUEST_USER_CONVERT_URL = "/account/guest/convert/";
+GUEST_USER_REQUIRED_USER_URL = "/account/profile/"

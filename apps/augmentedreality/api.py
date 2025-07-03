@@ -5,7 +5,7 @@ from adhocracy4.ratings.api import RatingViewSet
 
 
 class CombinedRatingViewSet(AllowGuestUserMixin, RatingViewSet):
-    http_method_names = ["post", "put", "patch", "delete", "head", "options"]
+    http_method_names = ["post", "patch"]
 
 
 class CombinedCommentViewSet(AllowGuestUserMixin, CommentViewSet):
