@@ -113,6 +113,7 @@ urlpatterns = [
     path("api/", include(comment_router.urls)),
     path("api/", include(moderation_router.urls)),
     path("api/", include(router.urls)),
+    path("api/", include(ar_urls)),
     re_path(r"^api/account/", AccountViewSet.as_view(), name="api-account"),
     # API JWT authentication
     re_path(r"^api/login", obtain_auth_token, name="api-login"),
@@ -203,7 +204,6 @@ urlpatterns = [
         TemplateView.as_view(template_name="robots.txt", content_type="text/plain"),
         name="robots_file",
     ),
-    path("api/", include(ar_urls)),
 ]
 
 
