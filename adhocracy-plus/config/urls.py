@@ -28,7 +28,6 @@ from adhocracy4.ratings.api import RatingViewSet
 from adhocracy4.reports.api import ReportViewSet
 from apps.account.api import AccountViewSet
 
-# from apps.augmentedreality import urls as ar_urls
 from apps.contrib import views as contrib_views
 from apps.contrib.sitemaps import static_sitemap_index
 from apps.documents.api import DocumentViewSet

@@ -12,7 +12,7 @@ class MinIOClient:
     @cached_property
     def client(self):
         if all(
-            hasattr(settings.MINIO_DATA, attr)
+            attr in settings.MINIO_DATA
             for attr in ["endpoint", "accessKey", "secretKey"]
         ):
             return Minio(
