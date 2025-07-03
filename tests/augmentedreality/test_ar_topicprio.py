@@ -30,7 +30,13 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         variant = Variant.objects.create(ar_object=ar_object, name="Test Variant")
         variant_content_type = ContentType.objects.get_for_model(Variant)
 
+        print(
+            f"Actual ContentType ID for Variant: {ContentType.objects.get_for_model(Variant).id}"
+        )
+        print(f"Variant ID being used: {variant.id}")
+
         url = f"/api/contenttypes/{variant_content_type.id}/objects/{variant.id}/arpas-comments/"
+        print(url)
         response = apiclient.post(
             url, {"comment": "Test comment", "agreed_terms_of_use": True}, format="json"
         )
