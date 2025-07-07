@@ -88,7 +88,7 @@ def test_ar_variant_comment_create_with_guest(apiclient):
         #     'object_id': variant.id
         # })
         url = reverse(
-            "arpas-comments",
+            "arpas-comments-list",
             kwargs={
                 "content_type": variant_content_type.id,  # changed from content_type_id
                 "object_pk": variant.id,  # changed from object_id
