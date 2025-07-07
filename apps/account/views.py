@@ -12,18 +12,20 @@ from django.views.generic.base import RedirectView
 from apps.users.models import User
 from apps.users.utils import set_session_language
 
+from guest_user.functions import is_guest_user
+from guest_user.mixins import GuestUserRequiredMixin, RegularUserRequiredMixin
+
 from . import forms
 from .emails import AccountDeletionEmail
 
 
-class AccountView(RedirectView):
+class AccountView(RegularUserRequiredMixin, RedirectView):
     permanent = False
     pattern_name = "account_profile"
     # Placeholder View to be replaced if we want to use a custom account
     # dashboard function overview.
 
-
-class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, generic.UpdateView):
+class ProfileUpdateView(LoginRequiredMixin, SuccessMessageMixin, RegularUserRequiredMixin, generic.UpdateView):
     model = User
     template_name = "a4_candy_account/profile.html"
     form_class = forms.ProfileForm
