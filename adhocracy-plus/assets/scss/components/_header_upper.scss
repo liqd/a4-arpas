@@ -16,10 +16,12 @@
 
     &--mobile {
         height: 2rem;
+
         @media (min-width: $breakpoint) {
             display:none;
         }
     }
+    
      &--desktop {
         @media (max-width: $breakpoint) {
             display:none;
