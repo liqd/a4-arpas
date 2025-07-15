@@ -7,52 +7,51 @@
 .header-upper__brand {
     font-size: $font-size-lg;
     line-height: inherit;
+    display: flex;
+    align-items: center;
 }
 
 .header-upper__brand-img {
     display: block;
-    height: 3rem;
+    height: 2.5rem;
     width: auto;
 
     &--mobile {
         height: 2rem;
 
         @media (min-width: $breakpoint) {
-            display:none;
+            display: none;
         }
     }
     
-     &--desktop {
+    &--desktop {
         @media (max-width: $breakpoint) {
-            display:none;
+            display: none;
         }
     }
-
 }
 
 .header-upper__lang {
     margin-right: 2 * $spacer;
-    margin-top: 0.5 * $spacer;
-
+    
     .dropdown-menu.show {
-        top: 100% !important; // overwriting the general dropdown overwrite
+        top: 100% !important;
     }
 }
 
 .header-upper__nav {
     flex-direction: row;
+    align-items: center;
+}
 
-    // bootstrap overwrites
-    .dropdown-menu {
-        position: absolute;
-    }
+.header-upper__nav .dropdown-menu {
+    position: absolute;
 }
 
 .header-upper__mobile-toggle {
     font-weight: bold;
 }
 
-// so it doesn't look misallighned when menu open
 .header-upper__mobile-toggle.show {
     z-index: 1001;
     background: transparent;
@@ -71,4 +70,3 @@
 .header-upper__mobile-toggle.show:after {
     content: "\f00d";
 }
-
