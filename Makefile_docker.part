@@ -1,0 +1,76 @@
+# Configuration
+DB_USER ?= postgres
+DB_PASSWORD ?= postgres
+DB_NAME ?= arpas-db
+PG_PORT ?= 5556
+POSTGIS_IMAGE ?= ghcr.io/baosystems/postgis:14-3.3  # ARM-native image
+
+.PHONY: help
+help:
+	@echo "Available commands:"
+	@echo "  db-init       - Initialize the PostgreSQL+PostGIS container"
+	@echo "  db-start      - Start the database container"
+	@echo "  db-stop       - Stop the database container"
+	@echo "  db-restart    - Restart the database container"
+	@echo "  db-status     - Check container status"
+	@echo "  db-logs       - View container logs"
+	@echo "  db-shell      - Access PostgreSQL shell"
+	@echo "  db-reset      - Completely reset the database (DESTROYS DATA)"
+	@echo "  db-backup     - Create database backup"
+	@echo "  db-restore    - Restore database from backup"
+
+.PHONY: db-init
+db-init:
+	@echo "Initializing PostgreSQL+PostGIS container..."
+	@docker-compose up -d --force-recreate
+	@echo "Container initialized."
+
+.PHONY: db-start
+db-start:
+	@echo "Starting PostgreSQL container..."
+	@docker-compose start
+	@echo "PostgreSQL started on port $(PG_PORT)"
+
+.PHONY: db-stop
+db-stop:
+	@echo "Stopping PostgreSQL container..."
+	@docker-compose stop
+	@echo "PostgreSQL stopped"
+
+.PHONY: db-restart
+db-restart: db-stop db-start
+
+.PHONY: db-status
+db-status:
+	@docker-compose ps
+
+.PHONY: db-logs
+db-logs:
+	@docker-compose logs -f postgres
+
+.PHONY: db-shell
+db-shell:
+	@echo "Connecting to PostgreSQL as $(DB_USER)..."
+	@docker-compose exec postgres psql -U $(DB_USER) -d $(DB_NAME)
+
+.PHONY: db-reset
+db-reset:
+	@echo "WARNING: This will completely reset the database and destroy all data!"
+	@read -p "Are you sure? (y/N) " confirm && [ $$confirm = y ] || exit 1
+	@docker-compose down -v
+	@docker-compose up -d
+	@echo "Database container has been reset"
+
+.PHONY: db-backup
+db-backup:
+	@mkdir -p backups
+	@docker-compose exec -T postgres pg_dump -U $(DB_USER) -Fc $(DB_NAME) > backups/$(shell date +%Y-%m-%d_%H-%M-%S).dump
+	@echo "Database backup created in backups/ directory"
+
+.PHONY: db-restore
+db-restore:
+	@echo "Available backups:"
+	@ls -lh backups/ || echo "No backups directory found"
+	@read -p "Enter backup filename: " backupfile && \
+		docker-compose exec -T postgres pg_restore -U $(DB_USER) -d $(DB_NAME) --clean --if-exists < backups/$$backupfile
+	@echo "Database restored from $$backupfile"
