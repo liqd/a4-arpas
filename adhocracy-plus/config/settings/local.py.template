@@ -8,7 +8,7 @@ GEOS_LIBRARY_PATH = "/opt/homebrew/Cellar/geos/3.13.1/lib/libgeos_c.dylib"
 MINIO_DATA = {
     "endpoint": "",
     "region": "eu-central-1",
-    "bucket": "",
+    "allowed_buckets": [""],
     "accessKey": "",
     "secretKey": ""
 }
