@@ -87,7 +87,7 @@ if ($missing.Count -gt 0) {
     Write-Host "`nMissing DLLs:" -ForegroundColor Red
     $missing | ForEach-Object { Write-Host " - $_" }
     Write-Host "`nYou can install them via:" -ForegroundColor Yellow
-    Write-Host "   make install-windows-specific-spatialite-tools-and-gdal"
+    Write-Host "   make install-windows-specific-tools"
 } else {
     Write-Host "`nAll required DLLs are present." -ForegroundColor Green
 }
