@@ -2,6 +2,8 @@ param(
 	[string]$sourcePath = $PSScriptRoot
 )
 
+Write-Host "Starting copy process for Windows specific magic files..." -ForegroundColor Cyan
+
 # Function to log the result of the copy operation
 function Log-CopyResult {
 	param (
@@ -34,7 +36,7 @@ function Copy-FileToSystem32 {
 # List of files to copy
 $filesToCopy = @("magic1.dll", "libgnurx-0.dll", "magic.mgc")
 
-Write-Host 'Start copy process for windows specific magic files...'
+Write-Host 'Start copy process for windows specific magic files...' -ForegroundColor Cyan
 # Copy each file and log the result
 foreach ($file in $filesToCopy) {
 	Copy-FileToSystem32 -fileName $file
@@ -44,6 +46,5 @@ Write-Host 'Copy process completed.'
 if (Test-Path 'C:/Windows/System32/magic1.dll') { Write-Host 'magic1.dll available in System32.' -ForegroundColor Green } else { Write-Host 'magic1.dll missing! Check for errors!' -ForegroundColor Red }
 if (Test-Path 'C:/Windows/System32/libgnurx-0.dll') { Write-Host 'libgnurx-0.dll available in System32.' -ForegroundColor Green } else { Write-Host 'libgnurx-0.dll missing! Check for errors!' -ForegroundColor Red }
 if (Test-Path 'C:/Windows/System32/magic.mgc') { Write-Host 'magic.mgc available in System32.' -ForegroundColor Green } else { Write-Host 'magic.mgc missing! Check for errors!' -ForegroundColor Red }
-
 
 pause

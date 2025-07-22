@@ -7,10 +7,14 @@ NODE_BIN = node_modules/.bin
 SOURCE_DIRS = adhocracy-plus apps tests
 ARGUMENTS=$(filter-out $(firstword $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
-# for mac os gsed is needed (brew install gnu-sed and brew install gsed)
-SED = sed
-ifneq (, $(shell command -v gsed;))
-	SED = gsed
+ifeq ($(OS), Windows_NT)
+	
+else
+	# for mac os gsed is needed (brew install gnu-sed and brew install gsed)
+	SED = sed
+	ifneq (, $(shell command -v gsed;))
+		SED = gsed
+	endif
 endif
 
 .PHONY: all
@@ -65,7 +69,9 @@ install:
 	npm run build
 ifeq ($(OS), Windows_NT)
 	make copy-windows-specific-magic-files
-	powershell -Command "if (!(Test-Path $(VIRTUAL_ENV_BIN)/python.exe)) { python -m venv $(VIRTUAL_ENV) }"
+	make install-windows-specific-tools
+	make setup-windows-specific-local-config
+	@powershell -Command "if (!(Test-Path $(VIRTUAL_ENV_BIN)/python.exe)) { python -m venv $(VIRTUAL_ENV) }"
 else
 	if [ ! -f $(VIRTUAL_ENV_BIN)/python3 ]; then python3 -m venv $(VIRTUAL_ENV); fi
 endif
@@ -76,20 +82,36 @@ endif
 .PHONY: copy-windows-specific-magic-files
 copy-windows-specific-magic-files:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "if (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { \
-		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Verb RunAs; \
+	@powershell -Command "if (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { \
+		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Verb RunAs -Wait; \
 		exit; \
 	} else { \
-		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"'; \
+		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Wait; \
 	}"
+endif
+
+.PHONY: install-windows-specific-tools
+install-windows-specific-tools:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command " \
+		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\install-tools.ps1\" -Verb RunAs; \
+	"
+endif
+
+.PHONY: setup-windows-specific-local-config
+setup-windows-specific-local-config:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command " \
+		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\setup-local-config.ps1\" -Verb RunAs; \
+	"
 endif
 
 .PHONY: clean
 clean:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "if (Test-Path package-lock.json) { Remove-Item package-lock.json }"
-	powershell -Command "if (Test-Path node_modules) { Remove-Item node_modules -Recurse -Force }"
-	powershell -Command "if (Test-Path venv) { Remove-Item venv -Recurse -Force }"
+	@powershell -Command "if (Test-Path package-lock.json) { Remove-Item package-lock.json }"
+	@powershell -Command "if (Test-Path node_modules) { Remove-Item node_modules -Recurse -Force }"
+	@powershell -Command "if (Test-Path venv) { Remove-Item venv -Recurse -Force }"
 else
 	if [ -f package-lock.json ]; then rm package-lock.json; fi
 	if [ -d node_modules ]; then rm -rf node_modules; fi
@@ -163,7 +185,7 @@ coverage:
 .PHONY: lint
 lint:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "& { \
+	@powershell -Command "& { \
 		$$EXIT_STATUS = 0; \
 		& $(VIRTUAL_ENV_BIN)\isort.exe --diff -c $(SOURCE_DIRS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
 		& $(VIRTUAL_ENV_BIN)\flake8.exe $(SOURCE_DIRS) --exclude migrations,settings; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
@@ -184,7 +206,7 @@ endif
 .PHONY: lint-quick
 lint-quick:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "& { \
+	@powershell -Command "& { \
 		$$EXIT_STATUS=0; \
 		npm run lint-staged; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
 		& $(VIRTUAL_ENV_BIN)\python.exe manage.py makemigrations --dry-run --check --noinput; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
@@ -200,7 +222,7 @@ endif
 .PHONY: lint-js-fix
 lint-js-fix:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "& { \
+	@powershell -Command "& { \
 		$$EXIT_STATUS=0; \
 		npm run lint-fix; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
 		exit $$EXIT_STATUS; \
@@ -215,7 +237,7 @@ endif
 .PHONY: lint-html-fix
 lint-html-fix:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "& { \
+	@powershell -Command "& { \
 		$$EXIT_STATUS=0; \
 		& $(VIRTUAL_ENV_BIN)\djlint.exe $(ARGUMENTS) --reformat --profile=django; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
 		exit $$EXIT_STATUS; \
@@ -229,7 +251,7 @@ endif
 .PHONY: lint-html-files
 lint-html-files:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "& { \
+	@powershell -Command "& { \
 		$$EXIT_STATUS=0; \
 		& $(VIRTUAL_ENV_BIN)\djlint.exe $(ARGUMENTS) --profile=django --ignore=H006,H030,H031,H037,T002; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
 		exit $$EXIT_STATUS; \
@@ -243,7 +265,7 @@ endif
 .PHONY: lint-python-files
 lint-python-files:
 ifeq ($(OS), Windows_NT)
-	powershell -Command "& { \
+	@powershell -Command "& { \
 		$$EXIT_STATUS=0; \
 		& $(VIRTUAL_ENV_BIN)\black.exe $(ARGUMENTS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
 		& $(VIRTUAL_ENV_BIN)\isort.exe $(ARGUMENTS) --filter-files; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
