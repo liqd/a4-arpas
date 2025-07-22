@@ -2,7 +2,7 @@ param(
 	[string]$sourcePath = $PSScriptRoot
 )
 
-Write-Host "Starting copy process for Windows specific magic files..." -ForegroundColor Cyan
+Write-Host "`nStarting copy process for Windows specific magic files..." -ForegroundColor Cyan
 
 # Function to log the result of the copy operation
 function Log-CopyResult {

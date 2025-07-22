@@ -68,9 +68,9 @@ install:
 	npm install --no-save
 	npm run build
 ifeq ($(OS), Windows_NT)
-	make copy-windows-specific-magic-files
-	make install-windows-specific-tools
-	make setup-windows-specific-local-config
+	@make copy-windows-specific-magic-files
+	@make setup-windows-specific-local-config
+	@make install-windows-specific-tools
 	@powershell -Command "if (!(Test-Path $(VIRTUAL_ENV_BIN)/python.exe)) { python -m venv $(VIRTUAL_ENV) }"
 else
 	if [ ! -f $(VIRTUAL_ENV_BIN)/python3 ]; then python3 -m venv $(VIRTUAL_ENV); fi
@@ -82,20 +82,14 @@ endif
 .PHONY: copy-windows-specific-magic-files
 copy-windows-specific-magic-files:
 ifeq ($(OS), Windows_NT)
-	@powershell -Command "if (!([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { \
-		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Verb RunAs -Wait; \
-		exit; \
-	} else { \
-		Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Wait; \
-	}"
-endif
-
-.PHONY: install-windows-specific-tools
-install-windows-specific-tools:
-ifeq ($(OS), Windows_NT)
 	@powershell -Command " \
-		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\install-tools.ps1\" -Verb RunAs; \
-	"
+		$$files = @('magic1.dll', 'libgnurx-0.dll', 'magic.mgc'); \
+		$$missing = $$files | Where-Object { !(Test-Path \"C:\Windows\System32\$$_\") }; \
+		if ($$missing.Count -gt 0) { \
+			Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Verb RunAs -Wait \
+		} else { \
+			Write-Host "`nAll magic files already exist. Skipping copy." -ForegroundColor Green \
+		}"
 endif
 
 .PHONY: setup-windows-specific-local-config
@@ -103,6 +97,14 @@ setup-windows-specific-local-config:
 ifeq ($(OS), Windows_NT)
 	@powershell -Command " \
 		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\setup-local-config.ps1\" -Verb RunAs; \
+	"
+endif
+
+.PHONY: install-windows-specific-tools
+install-windows-specific-tools:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command " \
+		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\install-tools.ps1\" -Verb RunAs; \
 	"
 endif
 
