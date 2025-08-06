@@ -1,12 +1,20 @@
 VIRTUAL_ENV ?= venv
+VIRTUAL_ENV_BIN = $(VIRTUAL_ENV)/bin
+ifeq ($(OS), Windows_NT)
+	VIRTUAL_ENV_BIN = $(VIRTUAL_ENV)/Scripts
+endif
 NODE_BIN = node_modules/.bin
 SOURCE_DIRS = adhocracy-plus apps tests
 ARGUMENTS=$(filter-out $(firstword $(MAKECMDGOALS)), $(MAKECMDGOALS))
 
-# for mac os gsed is needed (brew install gnu-sed and brew install gsed)
-SED = sed
-ifneq (, $(shell command -v gsed;))
-	SED = gsed
+ifeq ($(OS), Windows_NT)
+	
+else
+	# for mac os gsed is needed (brew install gnu-sed and brew install gsed)
+	SED = sed
+	ifneq (, $(shell command -v gsed;))
+		SED = gsed
+	endif
 endif
 
 .PHONY: all
@@ -59,53 +67,102 @@ help:
 install:
 	npm install --no-save
 	npm run build
-	if [ ! -f $(VIRTUAL_ENV)/bin/python3 ]; then python3 -m venv $(VIRTUAL_ENV); fi
-	$(VIRTUAL_ENV)/bin/python -m pip install --upgrade -r requirements/dev.txt
-	$(VIRTUAL_ENV)/bin/python manage.py migrate
+ifeq ($(OS), Windows_NT)
+	@make copy-windows-specific-magic-files
+	@make setup-windows-specific-local-config
+	@make install-windows-specific-tools
+	@powershell -Command "if (!(Test-Path $(VIRTUAL_ENV_BIN)/python.exe)) { python -m venv $(VIRTUAL_ENV) }"
+else
+	if [ ! -f $(VIRTUAL_ENV_BIN)/python3 ]; then python3 -m venv $(VIRTUAL_ENV); fi
+endif
+	$(VIRTUAL_ENV_BIN)/python -m pip install --upgrade pip
+	$(VIRTUAL_ENV_BIN)/python -m pip install --upgrade -r requirements/dev.txt
+	$(VIRTUAL_ENV_BIN)/python manage.py migrate
+
+.PHONY: copy-windows-specific-magic-files
+copy-windows-specific-magic-files:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command " \
+		$$files = @('magic1.dll', 'libgnurx-0.dll', 'magic.mgc'); \
+		$$missing = $$files | Where-Object { !(Test-Path \"C:\Windows\System32\$$_\") }; \
+		if ($$missing.Count -gt 0) { \
+			Start-Process wt.exe -ArgumentList 'powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\copy-files-to-system32.ps1\"' -Verb RunAs -Wait \
+		} else { \
+			Write-Host "`nAll magic files already exist. Skipping copy." -ForegroundColor Green \
+		}"
+endif
+
+.PHONY: setup-windows-specific-local-config
+setup-windows-specific-local-config:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command " \
+		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\setup-local-config.ps1\" -Verb RunAs; \
+	"
+endif
+
+.PHONY: install-windows-specific-tools
+install-windows-specific-tools:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command " \
+		powershell -NoProfile -ExecutionPolicy Bypass -File \"$(CURDIR)\windows_specific\install-tools.ps1\" -Verb RunAs; \
+	"
+endif
 
 .PHONY: clean
 clean:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "if (Test-Path package-lock.json) { Remove-Item package-lock.json }"
+	@powershell -Command "if (Test-Path node_modules) { Remove-Item node_modules -Recurse -Force }"
+	@powershell -Command "if (Test-Path venv) { Remove-Item venv -Recurse -Force }"
+else
 	if [ -f package-lock.json ]; then rm package-lock.json; fi
 	if [ -d node_modules ]; then rm -rf node_modules; fi
 	if [ -d venv ]; then rm -rf venv; fi
+endif
 
 .PHONY: fixtures
 fixtures:
-	$(VIRTUAL_ENV)/bin/python manage.py loaddata adhocracy-plus/fixtures/site-dev.json
-	$(VIRTUAL_ENV)/bin/python manage.py loaddata adhocracy-plus/fixtures/users-dev.json
-	$(VIRTUAL_ENV)/bin/python manage.py loaddata adhocracy-plus/fixtures/orga-dev.json
+	$(VIRTUAL_ENV_BIN)/python manage.py loaddata adhocracy-plus/fixtures/site-dev.json
+	$(VIRTUAL_ENV_BIN)/python manage.py loaddata adhocracy-plus/fixtures/users-dev.json
+	$(VIRTUAL_ENV_BIN)/python manage.py loaddata adhocracy-plus/fixtures/orga-dev.json
 
 .PHONY: server
 server:
-	$(VIRTUAL_ENV)/bin/python manage.py runserver 8004
+	$(VIRTUAL_ENV_BIN)/python manage.py runserver 8004
 
 .PHONY: watch
 watch:
+ifeq ($(OS), Windows_NT)
+	trap 'kill %1' KILL; \
+	npm run watch & \
+	$(VIRTUAL_ENV)\Scripts\python manage.py runserver 8004
+else
 	trap 'kill %1' KILL; \
 	npm run watch & \
 	$(VIRTUAL_ENV)/bin/python manage.py runserver 8004
+endif
 
 .PHONY: background
 background:
-	$(VIRTUAL_ENV)/bin/python manage.py process_tasks
+	$(VIRTUAL_ENV_BIN)/python manage.py process_tasks
 
 .PHONY: test
 test:
-	$(VIRTUAL_ENV)/bin/py.test --reuse-db
+	$(VIRTUAL_ENV_BIN)/py.test --reuse-db
 	npm run testNoCov
 
 .PHONY: pytest
 pytest:
-	$(VIRTUAL_ENV)/bin/py.test --reuse-db
+	$(VIRTUAL_ENV_BIN)/py.test --reuse-db
 
 .PHONY: pytest-lastfailed
 pytest-lastfailed:
-	$(VIRTUAL_ENV)/bin/py.test --reuse-db --last-failed
+	$(VIRTUAL_ENV_BIN)/py.test --reuse-db --last-failed
 
 .PHONY: pytest-clean
 pytest-clean:
 	if [ -f test_db.sqlite3 ]; then rm test_db.sqlite3; fi
-	$(VIRTUAL_ENV)/bin/py.test
+	$(VIRTUAL_ENV_BIN)/py.test
 
 .PHONY: jstest
 jstest:
@@ -125,55 +182,110 @@ jstest-updateSnapshots:
 
 .PHONY: coverage
 coverage:
-	$(VIRTUAL_ENV)/bin/py.test --reuse-db --cov --cov-report=html
+	$(VIRTUAL_ENV_BIN)/py.test --reuse-db --cov --cov-report=html
 
 .PHONY: lint
 lint:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "& { \
+		$$EXIT_STATUS = 0; \
+		& $(VIRTUAL_ENV_BIN)\isort.exe --diff -c $(SOURCE_DIRS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\flake8.exe $(SOURCE_DIRS) --exclude migrations,settings; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		npm run lint; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\python.exe manage.py makemigrations --dry-run --check --noinput; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
-	$(VIRTUAL_ENV)/bin/isort --diff -c $(SOURCE_DIRS) ||  EXIT_STATUS=$$?; \
-	$(VIRTUAL_ENV)/bin/flake8 $(SOURCE_DIRS) --exclude migrations,settings ||  EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/isort --diff -c $(SOURCE_DIRS) ||  EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/flake8 $(SOURCE_DIRS) --exclude migrations,settings ||  EXIT_STATUS=$$?; \
 	npm run lint ||  EXIT_STATUS=$$?; \
-	$(VIRTUAL_ENV)/bin/python manage.py makemigrations --dry-run --check --noinput || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/python manage.py makemigrations --dry-run --check --noinput || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
+
 
 .PHONY: lint-quick
 lint-quick:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		npm run lint-staged; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\python.exe manage.py makemigrations --dry-run --check --noinput; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	npm run lint-staged ||  EXIT_STATUS=$$?; \
-	$(VIRTUAL_ENV)/bin/python manage.py makemigrations --dry-run --check --noinput || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/python manage.py makemigrations --dry-run --check --noinput || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: lint-js-fix
 lint-js-fix:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		npm run lint-fix; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
 	npm run lint-fix ||  EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 # Use with caution, the automatic fixing might produce bad results
 .PHONY: lint-html-fix
 lint-html-fix:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		& $(VIRTUAL_ENV_BIN)\djlint.exe $(ARGUMENTS) --reformat --profile=django; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
-	$(VIRTUAL_ENV)/bin/djlint $(ARGUMENTS) --reformat --profile=django || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/djlint $(ARGUMENTS) --reformat --profile=django || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: lint-html-files
 lint-html-files:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		& $(VIRTUAL_ENV_BIN)\djlint.exe $(ARGUMENTS) --profile=django --ignore=H006,H030,H031,H037,T002; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
-	$(VIRTUAL_ENV)/bin/djlint $(ARGUMENTS) --profile=django --ignore=H006,H030,H031,H037,T002 || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/djlint $(ARGUMENTS) --profile=django --ignore=H006,H030,H031,H037,T002 || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: lint-python-files
 lint-python-files:
+ifeq ($(OS), Windows_NT)
+	@powershell -Command "& { \
+		$$EXIT_STATUS=0; \
+		& $(VIRTUAL_ENV_BIN)\black.exe $(ARGUMENTS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\isort.exe $(ARGUMENTS) --filter-files; if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		& $(VIRTUAL_ENV_BIN)\flake8.exe $(ARGUMENTS); if ($$LASTEXITCODE -ne 0) { $$EXIT_STATUS = $$LASTEXITCODE }; \
+		exit $$EXIT_STATUS; \
+	}"
+else
 	EXIT_STATUS=0; \
-	$(VIRTUAL_ENV)/bin/black $(ARGUMENTS) || EXIT_STATUS=$$?; \
-	$(VIRTUAL_ENV)/bin/isort $(ARGUMENTS) --filter-files || EXIT_STATUS=$$?; \
-	$(VIRTUAL_ENV)/bin/flake8 $(ARGUMENTS) || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/black $(ARGUMENTS) || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/isort $(ARGUMENTS) --filter-files || EXIT_STATUS=$$?; \
+	$(VIRTUAL_ENV_BIN)/flake8 $(ARGUMENTS) || EXIT_STATUS=$$?; \
 	exit $${EXIT_STATUS}
+endif
 
 .PHONY: po
 po:
-	$(VIRTUAL_ENV)/bin/python manage.py makemessages --all --no-obsolete -d django --extension html,email,py --ignore '$(CURDIR)/node_modules/adhocracy4/adhocracy4/*'
-	$(VIRTUAL_ENV)/bin/python manage.py makemessages --all --no-obsolete -d djangojs --ignore '$(VIRTUAL_ENV)/*' --ignore '$(CURDIR)/node_modules/dsgvo-video-embed/dist/*'
+	$(VIRTUAL_ENV_BIN)/python manage.py makemessages --all --no-obsolete -d django --extension html,email,py --ignore '$(CURDIR)/node_modules/adhocracy4/adhocracy4/*'
+	$(VIRTUAL_ENV_BIN)/python manage.py makemessages --all --no-obsolete -d djangojs --ignore '$(VIRTUAL_ENV)/*' --ignore '$(CURDIR)/node_modules/dsgvo-video-embed/dist/*'
 	$(foreach file, $(wildcard locale-*/locale/*/LC_MESSAGES/django*.po), \
 		$(SED) -i 's%#: .*/adhocracy4%#: adhocracy4%' $(file);)
 	$(foreach file, $(wildcard locale-*/locale/*/LC_MESSAGES/django*.po), \
@@ -183,16 +295,16 @@ po:
 
 .PHONY: mo
 mo:
-	$(VIRTUAL_ENV)/bin/python manage.py compilemessages
+	$(VIRTUAL_ENV_BIN)/python manage.py compilemessages
 
 .PHONY: release
 release: export DJANGO_SETTINGS_MODULE ?= adhocracy-plus.config.settings.build
 release:
 	npm install --silent
 	npm run build:prod
-	$(VIRTUAL_ENV)/bin/python -m pip install -r requirements.txt -q
-	$(VIRTUAL_ENV)/bin/python manage.py compilemessages -v0
-	$(VIRTUAL_ENV)/bin/python manage.py collectstatic --noinput -v0
+	$(VIRTUAL_ENV_BIN)/python -m pip install -r requirements.txt -q
+	$(VIRTUAL_ENV_BIN)/python manage.py compilemessages -v0
+	$(VIRTUAL_ENV_BIN)/python manage.py collectstatic --noinput -v0
 
 .PHONY: postgres-start
 postgres-start:
@@ -217,23 +329,23 @@ postgres-create:
 .PHONY: local-a4
 local-a4:
 	if [ -d "../adhocracy4" ]; then \
-		$(VIRTUAL_ENV)/bin/python -m pip install --upgrade ../adhocracy4; \
-		$(VIRTUAL_ENV)/bin/python manage.py migrate; \
+		$(VIRTUAL_ENV_BIN)/python -m pip install --upgrade ../adhocracy4; \
+		$(VIRTUAL_ENV_BIN)/python manage.py migrate; \
 		npm link ../adhocracy4; \
 	fi
 
 .PHONY: celery-worker-start
 celery-worker-start:
-	$(VIRTUAL_ENV)/bin/celery --app adhocracy-plus worker --loglevel INFO
+	$(VIRTUAL_ENV_BIN)/celery --app adhocracy-plus worker --loglevel INFO
 
 .PHONY: celery-worker-status
 celery-worker-status:
-	$(VIRTUAL_ENV)/bin/celery --app adhocracy-plus inspect registered
+	$(VIRTUAL_ENV_BIN)/celery --app adhocracy-plus inspect registered
 
 .PHONY: celery-worker-dummy-task
 celery-worker-dummy-task:
-	$(VIRTUAL_ENV)/bin/celery --app adhocracy-plus call dummy_task | awk '{print "celery-task-meta-"$$0}' | xargs redis-cli get | python3 -m json.tool
+	$(VIRTUAL_ENV_BIN)/celery --app adhocracy-plus call dummy_task | awk '{print "celery-task-meta-"$$0}' | xargs redis-cli get | python3 -m json.tool
 
 .PHONY: docs
 docs:
-	$(VIRTUAL_ENV)/bin/mkdocs serve
+	$(VIRTUAL_ENV_BIN)/mkdocs serve
