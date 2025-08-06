@@ -1,0 +1,132 @@
+CURRENT_REPO := $(subst -,_,$(shell basename $(CURDIR)))
+CURRENT_BRANCH_NAME ?= $(shell git rev-parse --abbrev-ref HEAD | tr -cd '[:alnum:]_' | tr '[:upper:]' '[:lower:]')
+
+DEFAULT_DB_NAME := "$(CURRENT_REPO)__$(CURRENT_BRANCH_NAME)"
+DEFAULT_USER ?= $(shell whoami)
+DEFAULT_PG_PORT ?= 5556
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+    PSQL := sudo -u postgres psql
+    PG_CTL := sudo -u postgres pg_ctl
+    SERVICE_CMD := sudo service postgresql
+    STATUS_CMD := sudo active is-active postgresql
+    EXPECTED_STATUS := started
+
+else ifeq ($(UNAME_S),Darwin)
+    PSQL := psql postgres
+    PG_CTL := pg_ctl
+    SERVICE_CMD := brew services
+    STATUS_CMD := brew services list | grep postgresql | awk '{print $$2}'
+    EXPECTED_STATUS := started
+
+endif
+
+.PHONY: pg-check-status
+pg-check-status:
+	@if $(STATUS_CMD) | grep -q "$(EXPECTED_STATUS)"; then \
+		echo "PostgreSQL is running"; \
+	else \
+		echo "PostgreSQL is not running"; \
+	fi
+
+.PHONY: pg-list-dbs
+pg-list-dbs: pg-check-status
+	@echo "\nAttempting to list databases..."
+	@if $(STATUS_CMD) | grep -q "$(EXPECTED_STATUS)"; then \
+		echo "Existing PostgreSQL databases:"; \
+		$(PSQL) -l; \
+	else \
+		echo "Cannot list databases - PostgreSQL is not running."; \
+		echo "Run 'make start-db' first."; \
+		exit 1; \
+	fi
+
+.PHONY: pg-start
+pg-start:
+	@echo "Starting PostgreSQL..."
+	@if $(STATUS_CMD) | grep -q "$(EXPECTED_STATUS)"; then \
+		echo "PostgreSQL is already running."; \
+	else \
+		PGPORT=$(DEFAULT_PG_PORT) $(SERVICE_CMD) start postgresql && \
+		sleep 2 && \
+		echo "PostgreSQL started successfully."; \
+	fi
+
+.PHONY: pg-stop
+pg-stop:
+	@echo "Stopping PostgreSQL..."
+	@if $(STATUS_CMD) | grep -q "$(EXPECTED_STATUS)"; then \
+		$(SERVICE_CMD) stop postgresql; \
+		echo "PostgreSQL stopped successfully."; \
+	else \
+		echo "PostgreSQL is not running."; \
+	fi
+
+.PHONY: pg-create-db
+pg-create-db: pg-list-dbs
+	@echo "\nDo you want to use an existing database? (y/n) [n]: "; \
+	read use_existing; \
+	if [ "$$use_existing" = "y" ]; then \
+		echo "Database creation aborted. Use an existing database."; \
+	else \
+		echo "Enter database name [$(DEFAULT_DB_NAME)]: "; \
+		read dbname; \
+		dbname=$${dbname:-$(DEFAULT_DB_NAME)}; \
+		\
+		echo "Enter username [$(DEFAULT_USER)]: "; \
+		read username; \
+		username=$${username:-$(DEFAULT_USER)}; \
+		\
+		$(PSQL) -c "CREATE USER $$username;" || echo "User already exists or error occurred"; \
+		$(PSQL) -c "GRANT ALL ON SCHEMA public TO $$username;" || echo "Grant failed or already exists"; \
+		$(PSQL) -c "CREATE DATABASE $$dbname;" || echo "Database creation failed or already exists"; \
+		$(PSQL) -c "ALTER DATABASE $$dbname OWNER TO $$username;" || echo "Ownership change failed"; \
+		$(PSQL) -c "GRANT ALL PRIVILEGES ON DATABASE $$dbname to $$username;" || echo "Privilege grant failed"; \
+		$(PSQL) -U $(DEFAULT_USER) -d $$dbname -c "CREATE EXTENSION postgis WITH SCHEMA public;" || echo "PostGIS extension creation failed"; \
+		\
+		echo "\nCreating Django superuser (username: admin)"; \
+		echo "Enter email for admin user: "; \
+		read email; \
+		echo "Enter password for admin user: "; \
+		stty -echo; \
+		read password; \
+		stty echo; \
+		echo; \
+		echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('admin', '$$email', '$$password') if not User.objects.filter(username='admin').exists() else None" | \
+		python manage.py shell || echo "Django superuser creation failed - make sure Django is properly configured"; \
+		\
+		echo "\nDatabase '$$dbname' setup complete with:"; \
+		echo "- Owner: $$username"; \
+		echo "- PostGIS extension"; \
+		echo "- Django superuser: admin"; \
+		\
+		echo "\nAdd this to your local.py settings file:\n"; \
+		echo "DATABASES = {"; \
+		echo "    \"default\": {"; \
+		echo "        \"ENGINE\": \"django.contrib.gis.db.backends.postgis\","; \
+		echo "        \"NAME\": \"$$dbname\","; \
+		echo "        \"USER\": \"$$username\","; \
+		echo "        \"PASSWORD\": \"\","; \
+		echo "        \"HOST\": \"\","; \
+		echo "        \"PORT\": \$(PG_PORT)\","; \
+		echo "        \"OPTIONS\": {},"; \
+		echo "    }"; \
+		echo "}"; \
+		echo "\nYou can copy and paste the above DATABASES configuration into your local.py file."; \
+	fi
+
+.PHONY: pg-delete-db
+pg-delete-db: pg-list-dbs
+	@echo "\nWARNING: This will permanently delete a database and all its data."
+	@echo "Enter database name to delete: "; \
+	read dbname; \
+	echo "Are you sure you want to delete database '$$dbname'? (y/n) [n]: "; \
+	read confirm; \
+	if [ "$$confirm" = "y" ]; then \
+		$(PSQL) -c "DROP DATABASE IF EXISTS $$dbname;"; \
+		echo "Database '$$dbname' deleted."; \
+	else \
+		echo "Database deletion cancelled."; \
+	fi
+	
