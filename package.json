@@ -94,6 +94,8 @@
     "webpack-merge": "6.0.1"
   },
   "scripts": {
+    "fresh-build": "npm run update-arpas-arc && npm run build",
+    "update-arpas-arc": "node scripts/update-local-arpas-arc.js",
     "build:prod": "webpack --config webpack.prod.js",
     "build": "webpack --config webpack.dev.js",
     "watch": "webpack --config webpack.dev.js --watch",
