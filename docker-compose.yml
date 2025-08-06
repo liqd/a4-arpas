@@ -1,0 +1,21 @@
+# Specific for MacOS
+services:
+  postgres:
+    image: ghcr.io/baosystems/postgis:14-3.3  # ARM-native image
+    container_name: project_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-arpas-db}
+    ports:
+      - "5556:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
