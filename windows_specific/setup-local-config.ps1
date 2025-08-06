@@ -89,7 +89,7 @@ Write-Host "`nSetting up local PostgreSQL database configuration..." -Foreground
 
 $dbConfig = @{}
 foreach ($key in $dbDefaults.Keys) {
-    $defaultValue = if ($currentDbConfig.ContainsKey($key)) { 
+    $defaultValue = if ($currentDbConfig.ContainsKey($key) -and -not [string]::IsNullOrWhiteSpace($currentDbConfig[$key])) { 
         $currentDbConfig[$key] 
     } else { 
         $dbDefaults[$key] 
@@ -154,7 +154,7 @@ Write-Host "`nSetting up MinIO configuration..." -ForegroundColor Cyan
 
 $minioConfig = @{}
 foreach ($key in $minioDefaults.Keys) {
-    $defaultValue = if ($currentMinioConfig.ContainsKey($key)) { 
+    $defaultValue = if ($currentMinioConfig.ContainsKey($key) -and -not [string]::IsNullOrWhiteSpace($currentMinioConfig[$key])) { 
         $currentMinioConfig[$key] 
     } else { 
         $minioDefaults[$key] 
