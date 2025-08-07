@@ -22,7 +22,7 @@
     "@react-three/fiber": "^8",
     "@react-three/xr": "^6",
     "adhocracy4": "git+https://github.com/liqd/adhocracy4#e7b8d74dd755497b24ef575c649939e21b69040c",
-    "arpas-arc": "git+https://github.com/liqd/arpas-arc#6774661ef34b4f65bcb38fc4da8fedeef01b5caf",
+    "arpas-arc": "git+https://github.com/liqd/arpas-arc#4b35d8aee041cd3f852b1a0532bd6b5ff8c48265",
     "autoprefixer": "10.4.20",
     "bootstrap": "5.2.3",
     "css-loader": "7.1.2",
@@ -94,6 +94,8 @@
     "webpack-merge": "6.0.1"
   },
   "scripts": {
+    "fresh-build": "npm run update-arpas-arc && npm run build",
+    "update-arpas-arc": "node scripts/update-local-arpas-arc.js",
     "build:prod": "webpack --config webpack.prod.js",
     "build": "webpack --config webpack.dev.js",
     "watch": "webpack --config webpack.dev.js --watch",
