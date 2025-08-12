@@ -1,3 +1,5 @@
+include Makefile_docker.part
+
 VIRTUAL_ENV ?= venv
 VIRTUAL_ENV_BIN = $(VIRTUAL_ENV)/bin
 ifeq ($(OS), Windows_NT)
