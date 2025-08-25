@@ -34,14 +34,20 @@ class MinIOClient:
             allowed_buckets = settings.MINIO_DATA.get("allowed_buckets")
             if bucket_name in allowed_buckets:
                 object_name = parts[1]
-                return self.client.presigned_get_object(
+                url = self.client.presigned_get_object(
                     bucket_name, object_name, expires=expires
                 )
+                return url
             else:
                 logger.error(f"Access to bucket {bucket_name} is not allowed.")
                 return None
         except Exception as e:
-            logger.error(f"Failed to generate presigned URL for {mesh_id}: {str(e)}")
+            # Debug variables -> remove after
+            parts = mesh_id.split("/", 1)
+            bucket_name = parts[0]
+            object_name = parts[1]
+            # end debug
+            logger.error(f"Failed to generate presigned URL for {mesh_id}: {str(e)}, bucket_name: {bucket_name}, object_name: {object_name}")
             return None
 
 
