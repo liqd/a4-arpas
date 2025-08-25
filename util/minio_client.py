@@ -43,11 +43,12 @@ class MinIOClient:
                 return None
         except Exception as e:
             # Debug variables -> remove after
+            endpoint = settings.MINIO_DATA.get("endpoint")
             parts = mesh_id.split("/", 1)
             bucket_name = parts[0]
             object_name = parts[1]
             # end debug
-            logger.error(f"Failed to generate presigned URL for {mesh_id}: {str(e)}, bucket_name: {bucket_name}, object_name: {object_name}")
+            logger.error(f"Failed to generate presigned URL for {mesh_id}: {str(e)}, endpoint: {endpoint}, bucket_name: {bucket_name}, object_name: {object_name}")
             return None
 
 
