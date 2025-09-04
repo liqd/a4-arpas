@@ -32,7 +32,10 @@ def test_react_augmentedreality_arc_variant_content_type_id():
     attributes = json.loads(data_attributes)
 
     variant_content_type_id = ContentType.objects.get_for_model(Variant).id
-    assert attributes["topic"]["variant_content_type_id"] == variant_content_type_id
+    assert (
+        attributes["content_types"]["variant_content_type_id"]
+        == variant_content_type_id
+    )
 
 
 @pytest.mark.django_db
