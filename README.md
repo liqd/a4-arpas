@@ -90,6 +90,8 @@ We take security seriously. If you find any security issues, please feel free to
 
 ### Use postgresql database for testing
 
+#### Linux
+
 run the following command once:
 ```
 make postgres-create
@@ -100,6 +102,10 @@ export DATABASE=postgresql
 make postgres-start
 make watch
 ```
+
+#### MacOS / Docker
+
+See the available commands in `Makefile_docker.part`
 
 ### Use Celery for task queues
 
